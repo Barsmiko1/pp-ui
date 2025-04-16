@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { signIn } from "next-auth/react"
 import { useForm } from "react-hook-form"
@@ -12,9 +12,9 @@ import { userAuthSchema } from "@/lib/validations/auth"
 import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { toast } from "sonner"
 import { Icons } from "@/components/icons"
 import Link from "next/link"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -29,26 +29,27 @@ export default function LoginPage({ className, ...props }: UserAuthFormProps) {
     resolver: zodResolver(userAuthSchema),
   })
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
+  const [authError, setAuthError] = React.useState<string | null>(null)
+  const router = useRouter()
   const searchParams = useSearchParams()
+  const callbackUrl = searchParams ? searchParams.get("from") || "/dashboard" : "/dashboard"
 
   async function onSubmit(data: FormData) {
     setIsLoading(true)
+    setAuthError(null)
 
     const signInResult = await signIn("credentials", {
       email: data.email.toLowerCase(),
       password: data.password,
       redirect: false,
-      callbackUrl: searchParams?.get("from") || "/dashboard",
+      callbackUrl,
     })
 
     setIsLoading(false)
 
     if (!signInResult?.ok) {
-      return toast({
-        title: "Something went wrong.",
-        description: "Your sign in request failed. Please try again.",
-        variant: "destructive",
-      })
+      setAuthError("Invalid email or password. Please try again.")
+      return
     }
 
     window.location.href = signInResult.url || "/dashboard"
@@ -69,6 +70,11 @@ export default function LoginPage({ className, ...props }: UserAuthFormProps) {
           <p className="text-sm text-muted-foreground">Enter your email to sign in to your account</p>
         </div>
         <div className={cn("grid gap-6", className)} {...props}>
+          {authError && (
+            <Alert variant="destructive">
+              <AlertDescription>{authError}</AlertDescription>
+            </Alert>
+          )}
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="grid gap-2">
               <div className="grid gap-1">

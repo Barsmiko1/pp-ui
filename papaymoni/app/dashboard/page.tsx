@@ -9,8 +9,10 @@ import { Overview } from "@/components/dashboard/overview"
 import { Loading } from "@/components/ui/loading"
 import { Error } from "@/components/ui/error"
 import { userApi } from "@/lib/api-service"
+import { useRouter } from "next/navigation"
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [userData, setUserData] = useState<any>(null)
@@ -25,6 +27,13 @@ export default function DashboardPage() {
         setUserData(data)
       } catch (err) {
         console.error("Error fetching user data:", err)
+
+        // If unauthorized, redirect to login
+        if (err instanceof Error && err.message.includes("unauthorized")) {
+          router.push("/login")
+          return
+        }
+
         setError("Failed to load user data. Please try again.")
       } finally {
         setIsLoading(false)
@@ -32,7 +41,7 @@ export default function DashboardPage() {
     }
 
     fetchUserData()
-  }, [])
+  }, [router])
 
   const handleRetry = () => {
     setIsLoading(true)
@@ -46,6 +55,13 @@ export default function DashboardPage() {
       })
       .catch((err) => {
         console.error("Error fetching user data:", err)
+
+        // If unauthorized, redirect to login
+        if (err instanceof Error && err.message.includes("unauthorized")) {
+          router.push("/login")
+          return
+        }
+
         setError("Failed to load user data. Please try again.")
         setIsLoading(false)
       })

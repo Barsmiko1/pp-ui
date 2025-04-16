@@ -4,7 +4,12 @@ import "./globals.css"
 import type { Metadata } from "next"
 import { Providers } from "@/components/providers"
 
-const inter = Inter({ subsets: ["latin"] })
+// Configure the Inter font with a proper subset to avoid loading issues
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+})
 
 export const metadata: Metadata = {
   title: "Papay Moni - P2P Cryptocurrency Trading Platform",
@@ -17,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>

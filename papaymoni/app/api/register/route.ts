@@ -1,3 +1,4 @@
+// app/api/register/route.ts
 import { NextResponse } from "next/server"
 import { hash } from "bcrypt"
 
@@ -10,13 +11,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 })
     }
 
-    // In a real app, this would check if the user already exists
-    // and then create the user in the database
-
     // Hash the password
     const hashedPassword = await hash(password, 10)
 
-    // Simulate API call to backend
+    // Make API call to backend
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
       method: "POST",
       headers: {
@@ -30,8 +28,8 @@ export async function POST(req: Request) {
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      return NextResponse.json({ message: error.message || "Registration failed" }, { status: response.status })
+      const errorData = await response.json().catch(() => ({ message: "Registration failed" }))
+      return NextResponse.json({ message: errorData.message || "Registration failed" }, { status: response.status })
     }
 
     return NextResponse.json({ message: "User registered successfully" }, { status: 201 })

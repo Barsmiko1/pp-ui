@@ -1,3 +1,4 @@
+// app/dashboard/advertisements/page.tsx
 "use client"
 
 import type React from "react"
@@ -12,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Loader2, Plus, Edit, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function AdvertisementsPage() {
   const { data: session } = useSession()
@@ -33,28 +35,35 @@ export default function AdvertisementsPage() {
 
   useEffect(() => {
     const fetchAdvertisements = async () => {
+      if (!session?.accessToken) return;
+      
       try {
+        setIsLoading(true);
         const response = await fetch("/api/proxy/bybit/advertisements", {
           headers: {
-            Authorization: `Bearer ${session?.accessToken}`,
+            "Content-Type": "application/json",
+            // Let the proxy middleware handle the token
           },
-        })
+        });
 
-        if (response.ok) {
-          const data = await response.json()
-          setAdvertisements(data.data || [])
+        if (!response.ok) {
+          throw new Error("Failed to fetch advertisements");
         }
+
+        const data = await response.json();
+        setAdvertisements(data.data || []);
       } catch (error) {
-        console.error("Error fetching advertisements:", error)
+        console.error("Error fetching advertisements:", error);
+        toast.error("Failed to load advertisements");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
     if (session?.accessToken) {
-      fetchAdvertisements()
+      fetchAdvertisements();
     }
-  }, [session])
+  }, [session]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -103,18 +112,20 @@ export default function AdvertisementsPage() {
       const response = await fetch(`/api/proxy/bybit/advertisements/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${session?.accessToken}`,
+          "Content-Type": "application/json",
+          // Let the proxy middleware handle the token
         },
       })
 
       if (response.ok) {
-        setAdvertisements(advertisements.filter((ad: any) => ad.id !== id))
+        setAdvertisements(advertisements.filter((ad: any) => ad.id !== id));
+        toast.success("Advertisement deleted successfully");
       } else {
-        alert("Failed to delete advertisement")
+        toast.error("Failed to delete advertisement");
       }
     } catch (error) {
-      console.error("Error deleting advertisement:", error)
-      alert("An unexpected error occurred")
+      console.error("Error deleting advertisement:", error);
+      toast.error("An unexpected error occurred");
     }
   }
 
@@ -139,7 +150,7 @@ export default function AdvertisementsPage() {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.accessToken}`,
+          // Let the proxy middleware handle the token
         },
         body: JSON.stringify(payload),
       })
@@ -149,18 +160,20 @@ export default function AdvertisementsPage() {
 
         if (formData.id) {
           setAdvertisements(advertisements.map((ad: any) => (ad.id === formData.id ? data.data : ad)))
+          toast.success("Advertisement updated successfully");
         } else {
           setAdvertisements([...advertisements, data.data])
+          toast.success("Advertisement created successfully");
         }
 
         setDialogOpen(false)
         resetForm()
       } else {
-        alert("Failed to save advertisement")
+        toast.error("Failed to save advertisement");
       }
     } catch (error) {
-      console.error("Error saving advertisement:", error)
-      alert("An unexpected error occurred")
+      console.error("Error saving advertisement:", error);
+      toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false)
     }

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Icons } from "@/components/icons"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Loading } from "@/components/ui/loading"
 import { Error } from "@/components/ui/error"
 import { EmptyState } from "@/components/ui/empty-state"

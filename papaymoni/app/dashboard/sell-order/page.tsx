@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { Icons } from "@/components/icons"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,10 +34,11 @@ export default function SellOrdersPage() {
     setError(null)
     try {
       const response = await orderApi.getSellOrders()
-      setOrders(response.data)
+      console.log("Sell orders response:", response)
+      setOrders(response.data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load orders")
       console.error("Error fetching sell orders:", err)
+      setError(err instanceof Error ? err.message : "Failed to load orders")
     } finally {
       setIsLoading(false)
     }

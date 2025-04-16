@@ -34,10 +34,11 @@ export default function BuyOrdersPage() {
     setError(null)
     try {
       const response = await orderApi.getBuyOrders()
-      setOrders(response.data)
+      console.log("Buy orders response:", response)
+      setOrders(response.data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load orders")
       console.error("Error fetching buy orders:", err)
+      setError(err instanceof Error ? err.message : "Failed to load orders")
     } finally {
       setIsLoading(false)
     }
